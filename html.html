@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Văn Bản Thành Giọng Nói (Đơn giản)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 700px; margin: auto; background-color: #f4f4f9; }
+        h1 { text-align: center; color: #333; }
+        textarea { width: 100%; height: 150px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; font-size: 16px; }
+        .controls { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        select, button { padding: 10px 15px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; cursor: pointer; }
+        button { background-color: #007bff; color: white; border-color: #007bff; }
+        button:hover { background-color: #0056b3; }
+        label { margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Trình Tạo Giọng Đọc</h1>
+
+    <textarea id="text-input" placeholder="Nhập văn bản bạn muốn chuyển đổi ở đây..."></textarea>
+
+    <div class="controls">
+        <div>
+            <label for="voice-select">Chọn giọng đọc:</label>
+            <select id="voice-select"></select>
+        </div>
+        <button id="speak-button">Đọc văn bản</button>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const voiceSelect = document.getElementById('voice-select');
+        const speakButton = document.getElementById('speak-button');
+
+        const synth = window.speechSynthesis;
+        let voices = [];
+
+        function populateVoiceList() {
+            voices = synth.getVoices();
+            voiceSelect.innerHTML = ''; // Xóa danh sách cũ
+            for (const voice of voices) {
+                // Chỉ hiển thị các giọng đọc tiếng Việt hoặc tiếng Anh
+                if (voice.lang.startsWith('vi') || voice.lang.startsWith('en')) {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.setAttribute('data-lang', voice.lang);
+                    option.setAttribute('data-name', voice.name);
+                    voiceSelect.appendChild(option);
+                }
+            }
+        }
+
+        // Lấy danh sách giọng đọc (có thể mất một chút thời gian)
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        speakButton.addEventListener('click', () => {
+            if (synth.speaking) {
+                console.error('Đang trong quá trình đọc.');
+                return;
+            }
+if (textInput.value !== '') {
+                const utterThis = new SpeechSynthesisUtterance(textInput.value);
+                const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+                const selectedVoice = voices.find(voice => voice.name === selectedOption);
+                
+                utterThis.voice = selectedVoice;
+                
+                utterThis.onend = function() {
+                    console.log('Đã đọc xong.');
+                };
+                utterThis.onerror = function(event) {
+                    console.error('Đã xảy ra lỗi:', event);
+                };
+
+                synth.speak(utterThis);
+            }
+        });
+    </script>
+</body>
+</html>
